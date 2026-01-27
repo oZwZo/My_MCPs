@@ -1,0 +1,5 @@
+{
+  "NCBI_API_KEY": "从 https://www.ncbi.nlm.nih.gov/account/ 获取",
+  "NCBI_EMAIL": "your_email@example.com",
+  "SERPAPI_KEY": "从 https://serpapi.com/users/sign_up 获取"
+}

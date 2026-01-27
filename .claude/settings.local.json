@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip search:*)",
+      "Bash(pip index:*)",
+      "Bash(chmod:*)"
+    ]
+  }
+}
