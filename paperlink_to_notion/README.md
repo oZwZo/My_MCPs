@@ -12,9 +12,17 @@ For each paper, the Notion page contains:
 | **Abstract** | Verbatim |
 | **Introduction** | Logical-flow summary (bold-lead paragraphs following the argument arc) |
 | **Results** | Brief subsection summaries + every figure as a collapsible block with high-res PMC image and full caption |
+| **Key Methods** | *(Computational papers only)* Exact formulas with LaTeX block/inline equations, algorithmic steps, loss functions |
 | **Discussion** | Logical-flow summary |
 
 Database properties filled: `Name`, `Author`, `Published Year`, `journal`, `Tags`, `Paper Signature`, `URL`, `status`.
+
+### Math formula support
+
+For computational methodology papers, the skill extracts and formats mathematical equations using Notion's KaTeX rendering:
+- **Block equations**: `$$ ... $$` with standard LaTeX (`\frac`, `\sum`, `\mathbb`, etc.)
+- **Inline equations**: `$...$` for variables and short expressions
+- All formulas are accompanied by variable definitions
 
 ---
 

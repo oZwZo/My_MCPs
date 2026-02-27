@@ -1,6 +1,6 @@
 ---
 name: paperlink_to_notion
-description: Read a research paper URL and save a fully-structured literature note to the Notion Literature database. Fetches the full paper, builds an infographic, summarizes Introduction and Discussion as logical-flow narratives, saves Results as brief subsection summaries, and embeds all figures as collapsible blocks with high-res PMC images and full captions.
+description: Read a research paper URL and save a fully-structured literature note to the Notion Literature database. Fetches the full paper, builds an infographic, summarizes Introduction and Discussion as logical-flow narratives, saves Results as brief subsection summaries, embeds all figures as collapsible blocks with high-res PMC images and full captions, and adds a Key Methods section with exact formulas for computational papers.
 argument-hint: <paper-url>
 ---
 
@@ -39,6 +39,12 @@ WebFetch on the PMC article URL with prompt:
 
 PMC high-res figure URLs follow this pattern:
 `https://cdn.ncbi.nlm.nih.gov/pmc/blobs/<hash>/<article_id>/<file_hash>/<filename>.jpg`
+
+**Call D — Methods / mathematical content (for computational papers):**
+WebFetch on the PMC article URL with prompt:
+> "Find the Methods/Materials and Methods section. Extract ALL mathematical formulas, equations, loss functions, objective functions, and distance metrics verbatim. For each formula, include the surrounding text that explains what the variables mean. Also extract algorithmic steps described mathematically. Include equation numbers if present."
+
+If the paper describes a computational method/tool/algorithm, this call is **required**. If the paper is purely experimental biology with no novel computational methodology, skip this call.
 
 ---
 
@@ -84,7 +90,9 @@ Write the `content` field using Notion-flavored Markdown (tabs for indentation, 
 7. `---` divider
 8. `# **Results**` — brief summaries + collapsible figures (see format below)
 9. `---` divider
-10. `# **Discussion**` — logical flow summary (see format below)
+10. `# **Key Methods**` — formulas + algorithmic details (see Step 8.5; **computational papers only**)
+11. `---` divider
+12. `# **Discussion**` — logical flow summary (see format below)
 
 #### TOC toggle (always include at the very top):
 ```
@@ -135,7 +143,10 @@ flowchart TB
 ```
 ```
 
-### 5c — Task/contribution columns (4 columns)
+### 5c — Task/contribution columns (2 columns, stacked)
+
+Use **2 columns** with 2 callouts stacked in each column. Do NOT use 4 columns — they render too tight visually.
+
 ```
 <columns>
 	<column>
@@ -143,8 +154,6 @@ flowchart TB
 	**① <Task 1 Name>**
 	<2-sentence description>
 	:::
-	</column>
-	<column>
 	::: callout {icon="<emoji>" color="green_bg"}
 	**② <Task 2 Name>**
 	<2-sentence description>
@@ -155,8 +164,6 @@ flowchart TB
 	**③ <Task 3 Name>**
 	<2-sentence description>
 	:::
-	</column>
-	<column>
 	::: callout {icon="<emoji>" color="pink_bg"}
 	**④ <Task 4 Name>**
 	<2-sentence description>
@@ -183,7 +190,10 @@ flowchart TB
 </table>
 ```
 
-### 5e — Stats row (4 columns)
+### 5e — Stats row (2 columns, stacked)
+
+Same 2-column layout as 5c. Stack 2 stat callouts per column.
+
 ```
 <columns>
 	<column>
@@ -191,8 +201,6 @@ flowchart TB
 	**<Stat label>**
 	<stat value>
 	:::
-	</column>
-	<column>
 	::: callout {icon="🔌" color="gray_bg"}
 	**<Stat label>**
 	<stat value>
@@ -203,8 +211,6 @@ flowchart TB
 	**<Stat label>**
 	<stat value>
 	:::
-	</column>
-	<column>
 	::: callout {icon="📖" color="blue_bg"}
 	**<Stat label>**
 	[<link text>](<url>)
@@ -282,9 +288,92 @@ Typical Discussion structure:
 
 ---
 
+## Step 8.5 — Key Methods section (computational papers only)
+
+**When to include:** Add this section if the paper proposes a new computational method, algorithm, model architecture, or mathematical framework. Skip if the paper is purely experimental biology.
+
+**Placement:** Between Results and Discussion.
+
+### Format
+
+For each major algorithmic component, write a subsection with:
+
+```
+### <Component Name>
+
+**<Bold-lead label>.** <1–2 sentence description of what this step does and why.>
+
+$$
+<block equation in LaTeX>
+$$
+
+where $variable_1$ is ..., $variable_2$ is ... <define all variables>.
+```
+
+### Math formula syntax rules (CRITICAL)
+
+**Block equations** — use `$$` on separate lines:
+```
+$$
+z_i = \frac{x_i - \mu_i}{\sigma_i}
+$$
+```
+
+**Inline equations** — use `$...$` with mandatory whitespace:
+```
+where $x_i$ is the frequency and $\mu$ is the mean.
+```
+
+**Rules:**
+1. Block `$$` delimiters MUST each be on their own line
+2. Inline `$` MUST have whitespace before opening `$` and after closing `$`
+3. Inline `$` MUST NOT have whitespace right after opening `$` or right before closing `$`
+4. Do NOT escape LaTeX characters (`\`, `{`, `}`) inside math blocks — they are LaTeX, not Notion markdown
+5. Standard LaTeX/KaTeX commands are supported: `\frac`, `\sum`, `\prod`, `\int`, `\mathbf`, `\mathbb`, `\exp`, `\log`, `\text`, `\top`, `\mid`, `\neq`, `\geq`, `\leq`, `\ldots`, `\in`, `\cap`, `\cup`, `\overline`
+6. Use parentheses `()` instead of brackets `[]` inside inline math to avoid conflicts with Notion's link syntax
+7. For inline math with special characters, prefer the backtick variant: `` $`\mathbf{1}(\cdot)`$ ``
+8. Notion may internally convert `$...$` to `` $`...`$ `` — both render identically
+
+### Typical subsections for ML/computational papers
+
+1. **Input representation / feature engineering** — how raw data is encoded
+2. **Model architecture** — core model with loss function / objective
+3. **Training procedure** — optimization, regularization, cross-validation
+4. **Distance metrics / similarity measures** — if clustering or retrieval is involved
+5. **Ensemble / integration** — how sub-models are combined
+6. **Evaluation metrics** — AUROC, F1, or custom metrics with formulas
+
+### Example Key Methods block
+
+```
+# **Key Methods**
+
+### Feature Normalization
+
+**Z-score standardization.** Raw gene usage counts are log-transformed and standardized:
+
+$$
+z_i = \frac{x_i - \mu_i}{\sigma_i}
+$$
+
+where $x_i$ is the log-transformed frequency of gene $i$ , $\mu_i$ and $\sigma_i$ are the cross-sample mean and standard deviation.
+
+### Sequence Embedding (ESM-2)
+
+**Mean pooling.** Per-residue hidden states from ESM-2 are averaged:
+
+$$
+\mathbf{e} = \frac{1}{L} \sum_{i=1}^{L} \mathbf{h}_i
+$$
+
+where $\mathbf{h}_i \in \mathbb{R}^{1280}$ are per-residue representations and $L$ is sequence length.
+```
+
+---
+
 ## Quality checklist before finishing
 
-- [ ] All 6 figures have collapsible blocks with full captions and working image URLs
+- [ ] All figures have collapsible blocks with full captions and working image URLs
 - [ ] Introduction is a logical-flow summary (NOT a plain dump of the text)
 - [ ] Results are brief (2–3 sentences per subsection, not full text)
 - [ ] Discussion is a logical-flow summary
@@ -292,3 +381,6 @@ Typical Discussion structure:
 - [ ] Page properties are fully filled (Name, Author, Year, Journal, Tags, Paper Signature, URL)
 - [ ] Mermaid diagram uses `<br>` for line breaks (NOT `\n`)
 - [ ] All figure children are indented with a tab inside `<details>`
+- [ ] **For computational papers:** Key Methods section is present with exact formulas
+- [ ] **Math syntax:** Block equations use `$$` on own lines; inline equations have whitespace around `$` delimiters
+- [ ] **Tags format:** Multi-select uses JSON array string `["tag1","tag2"]` (NOT comma-separated)
