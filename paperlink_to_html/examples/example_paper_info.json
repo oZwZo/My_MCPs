@@ -1,0 +1,124 @@
+{
+  "title": "Example synthetic paper: a tiny demo of the paper_info schema",
+  "authors_short": "Doe J. · Smith A. · Roe B. · ... · Last Author Z.",
+  "authors_full": "Doe J., Smith A., Roe B., Doe Jr. J., Foo C., Bar D., Last Author Z.",
+  "doi": "10.0000/example.2025.000",
+  "journal": "Demo Journal",
+  "year": 2025,
+  "paper_url": "https://example.org/paper/synthetic-demo",
+  "eyebrow": "Demo Journal · 2025 · Synthetic example",
+  "page_title_short": "Demo",
+  "theme_storage_key": "demo-theme",
+  "primary_accent": "#5b6cff",
+  "primary_accent_dark": "#7c8cff",
+  "lead_paragraph": "This is a synthetic <i>paper_info</i> demonstrating every field the renderer accepts. Replace each field with content drawn from a real paper (paraphrased, not verbatim) when authoring a real learning guide.",
+  "meta_description": "Synthetic demo paper_info used to exercise the paperlink_to_html renderer.",
+  "meta_extras": [
+    { "label": "Status", "value": "Demo" },
+    { "label": "License", "value": "—", "url": "https://example.org/license" }
+  ],
+  "hero_counters": [
+    { "value": 3,   "decimals": 0, "suffix": "",  "unit": "Demo widgets",      "desc": "small synthetic count" },
+    { "value": 2.5, "decimals": 1, "suffix": "k", "unit": "Synthetic samples", "desc": "round number for the demo" },
+    { "value": 1,   "decimals": 0, "suffix": "",  "unit": "Methods compared",   "desc": "just the baseline" }
+  ],
+  "sub_counters": [
+    { "label": "demo year",     "value": "2025" },
+    { "label": "schema fields", "value": "20+" },
+    { "label": "renderer deps", "value": "0" },
+    { "label": "build step",    "value": "none" }
+  ],
+  "sections": [
+    {
+      "anchor": "intro",
+      "title": "What this example shows",
+      "body_html": "<p>This synthetic example exists so you can run <code>render_html.py</code> end-to-end without copying any real paper's content. Every section of a real <i>paper_info</i> JSON is represented here in miniature.</p><div class=\"sidenote\"><strong>Tip.</strong> When writing a real <i>paper_info</i>, the <code>body_html</code> of each section is RAW HTML — drop in <code>&lt;p&gt;</code> paragraphs, <code>&lt;table&gt;</code>, <code>&lt;svg&gt;</code> illustrations, or any custom widget you need.</div>"
+    },
+    {
+      "anchor": "demo-table",
+      "title": "A small sortable table",
+      "body_html": "<div class=\"table-wrap\"><table class=\"data\"><thead><tr><th data-sort=\"text\">Item</th><th data-sort=\"num\">Count</th></tr></thead><tbody><tr><td>Alpha</td><td>12</td></tr><tr><td>Beta</td><td>5</td></tr><tr><td>Gamma</td><td>34</td></tr></tbody></table></div>"
+    }
+  ],
+  "flow_section_intro": "Synthetic three-node demo flow.",
+  "flow_width": 800,
+  "flow_height": 220,
+  "flow_nodes": [
+    { "id": "input",  "x": 60,  "y": 80, "w": 140, "h": 60, "label": "Input",  "sub": "raw data",   "method": null,     "kind": "data" },
+    { "id": "method", "x": 320, "y": 80, "w": 140, "h": 60, "label": "Method", "sub": "demo step",  "method": "DemoMethod", "kind": "step" },
+    { "id": "output", "x": 580, "y": 80, "w": 140, "h": 60, "label": "Output", "sub": "results",    "method": null,     "kind": "data" }
+  ],
+  "flow_edges": [
+    { "from": "input",  "to": "method" },
+    { "from": "method", "to": "output" }
+  ],
+  "flow_order": ["input", "method", "output"],
+  "methods": {
+    "DemoMethod": {
+      "name": "DemoMethod",
+      "subtitle": "Synthetic placeholder",
+      "citation": "Doe J. — A synthetic placeholder method, Demo Journal 2025.",
+      "doi": "https://example.org/method/demo",
+      "intuition": "<p>A toy linear transformation used only to exercise the renderer.</p>",
+      "equations": ["y = a x + b"],
+      "schematic_svg": "",
+      "why": "Picked because it is the simplest model that demonstrates the schema."
+    }
+  },
+  "figures": [
+    {
+      "fig_no": 1,
+      "title": "Synthetic Figure 1",
+      "panels_html": "<b>a</b>, demo panel a. <b>b</b>, demo panel b.",
+      "link": "https://example.org/paper/synthetic-demo#fig1"
+    }
+  ],
+  "findings": [
+    {
+      "label": "Demo finding",
+      "title": "The renderer can be exercised without a real paper",
+      "body_html": "<p>This card exists to show the layout. Replace with a real discovery when authoring a learning guide for an actual paper.</p>"
+    }
+  ],
+  "comparison_headers": ["Tool", "Year", "Scope"],
+  "comparison_rows": [
+    ["DemoMethod (this example)", "2025", "Synthetic placeholder"],
+    ["Other baseline", "2024", "Comparable demo"]
+  ],
+  "glossary": [
+    { "id": "g-demo", "term": "Demo",      "def": "A small synthetic placeholder used to exercise the renderer." },
+    { "id": "g-schema", "term": "paper_info", "def": "The JSON object the renderer accepts as input." }
+  ],
+  "quiz": [
+    {
+      "question": "What does this example demonstrate?",
+      "options": {
+        "a": "A real published paper",
+        "b": "The renderer's schema, end-to-end",
+        "c": "A bug fix",
+        "d": "Nothing"
+      },
+      "correct": "b",
+      "explain": "It exercises every top-level field of the paper_info schema so the renderer can be smoke-tested without any real paper content."
+    },
+    {
+      "question": "Where does the body content of a section come from?",
+      "options": {
+        "a": "Hard-coded in the template",
+        "b": "Generated by the renderer's JS",
+        "c": "The body_html field of each section in paper_info",
+        "d": "Fetched at runtime from the paper URL"
+      },
+      "correct": "c",
+      "explain": "Each section's body_html is raw HTML that the renderer inserts verbatim into the page."
+    }
+  ],
+  "related_papers": [
+    {
+      "label": "render_html.py source",
+      "citation": "paperlink_to_html skill — local repo.",
+      "url": ""
+    }
+  ],
+  "footer_note": "Synthetic example output from the paperlink_to_html renderer. Not a real paper."
+}

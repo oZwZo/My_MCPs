@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "paper_info",
+  "description": "Input schema for render_html(). Every field is optional except where noted; missing fields fall back to sensible defaults.",
+  "type": "object",
+  "additionalProperties": true,
+  "properties": {
+    "title":               { "type": "string",  "description": "Full paper title." },
+    "authors_short":       { "type": "string",  "description": "Short author list shown in hero (first 6 + senior PIs)." },
+    "authors_full":        { "type": "string",  "description": "Full author list (informational only)." },
+    "doi":                 { "type": "string" },
+    "journal":             { "type": "string" },
+    "year":                { "type": ["integer","string"] },
+    "paper_url":           { "type": "string",  "format": "uri" },
+    "eyebrow":             { "type": "string",  "description": "Short kicker line in the hero (e.g. 'Cell · 2025 · Methods paper')." },
+    "lead_paragraph":      { "type": "string",  "description": "2-4 sentences below the title in the hero. Raw HTML allowed." },
+    "meta_description":    { "type": "string",  "description": "HTML meta description tag." },
+    "page_title_short":    { "type": "string",  "description": "Topbar brand + browser tab title (short)." },
+    "theme_storage_key":   { "type": "string",  "description": "localStorage key for dark/light theme (paper-specific slug)." },
+    "primary_accent":      { "type": "string",  "description": "CSS hex color for the light theme accent." },
+    "primary_accent_dark": { "type": "string",  "description": "CSS hex color for the dark theme accent." },
+
+    "meta_extras": {
+      "type": "array",
+      "description": "Extra pills/spans in the hero metadata row.",
+      "items": {
+        "type": "object",
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "string" },
+          "url":   { "type": "string" }
+        }
+      }
+    },
+
+    "hero_counters": {
+      "type": "array",
+      "description": "3-4 big numbers across the top, animated tick-up.",
+      "items": {
+        "type": "object",
+        "required": ["value", "unit"],
+        "properties": {
+          "value":    { "type": ["number","integer"] },
+          "decimals": { "type": "integer", "default": 0 },
+          "suffix":   { "type": "string",  "default": "" },
+          "unit":     { "type": "string" },
+          "desc":     { "type": "string" }
+        }
+      }
+    },
+
+    "sub_counters": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "value"],
+        "properties": {
+          "label": { "type": "string" },
+          "value": { "type": "string" }
+        }
+      }
+    },
+
+    "sections": {
+      "type": "array",
+      "description": "Main narrative spine. Each section becomes a <section data-anchor=...>.",
+      "items": {
+        "type": "object",
+        "required": ["anchor", "title", "body_html"],
+        "properties": {
+          "anchor":    { "type": "string" },
+          "title":     { "type": "string" },
+          "body_html": { "type": "string", "description": "RAW HTML. Anything goes: <p>, tables, SVGs, custom widgets." },
+          "wide":      { "type": "boolean", "default": false }
+        }
+      }
+    },
+
+    "flow_section_intro": { "type": "string" },
+    "flow_width":         { "type": "integer", "default": 1200 },
+    "flow_height":        { "type": "integer", "default": 460 },
+
+    "flow_nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["id", "x", "y", "w", "h", "label"],
+        "properties": {
+          "id":     { "type": "string" },
+          "x":      { "type": "integer" },
+          "y":      { "type": "integer" },
+          "w":      { "type": "integer" },
+          "h":      { "type": "integer" },
+          "label":  { "type": "string" },
+          "sub":    { "type": "string" },
+          "method": { "type": ["string","null"], "description": "Key into `methods` dict. null = no slide-in panel." },
+          "kind":   { "type": "string", "enum": ["data","step","alt","bench","winner"], "description": "Visual style hint." }
+        }
+      }
+    },
+
+    "flow_edges": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["from", "to"],
+        "properties": {
+          "from":   { "type": "string" },
+          "to":     { "type": "string" },
+          "dashed": { "type": "boolean", "default": false }
+        }
+      }
+    },
+
+    "flow_order": {
+      "type": "array",
+      "description": "Playback order for the ▶ Play button. Defaults to nodes in declaration order.",
+      "items": { "type": "string" }
+    },
+
+    "methods": {
+      "type": "object",
+      "description": "Map method-key → deep-panel content.",
+      "additionalProperties": {
+        "type": "object",
+        "required": ["name"],
+        "properties": {
+          "name":          { "type": "string" },
+          "subtitle":      { "type": "string" },
+          "citation":      { "type": "string" },
+          "doi":           { "type": "string" },
+          "intuition":     { "type": "string", "description": "Raw HTML." },
+          "equations":     { "type": "array", "items": { "type": "string" }, "description": "LaTeX strings without $$ delimiters." },
+          "schematic_svg": { "type": "string", "description": "Inline <svg>...</svg>. Optional." },
+          "why":           { "type": "string", "description": "1-2 sentence rationale for why this paper chose this method." }
+        }
+      }
+    },
+
+    "figures": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["fig_no", "title", "link"],
+        "properties": {
+          "fig_no":      { "type": ["integer","string"] },
+          "title":       { "type": "string" },
+          "panels_html": { "type": "string", "description": "Per-panel caption text (a, b, c, ...). Raw HTML." },
+          "link":        { "type": "string", "description": "URL to open the figure on the source site." }
+        }
+      }
+    },
+
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "title"],
+        "properties": {
+          "label":     { "type": "string", "description": "Small kicker above the title (e.g. 'Discovery 3')." },
+          "title":     { "type": "string" },
+          "body_html": { "type": "string" }
+        }
+      }
+    },
+
+    "comparison_headers": { "type": "array", "items": { "type": "string" } },
+    "comparison_rows":    { "type": "array", "items": { "type": "array", "items": { "type": "string" } } },
+
+    "glossary": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["term", "def"],
+        "properties": {
+          "id":   { "type": "string" },
+          "term": { "type": "string" },
+          "def":  { "type": "string" }
+        }
+      }
+    },
+
+    "quiz": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["question", "options", "correct"],
+        "properties": {
+          "question": { "type": "string" },
+          "options": {
+            "type": "object",
+            "properties": {
+              "a": { "type": "string" },
+              "b": { "type": "string" },
+              "c": { "type": "string" },
+              "d": { "type": "string" }
+            }
+          },
+          "correct": { "type": "string", "enum": ["a","b","c","d"] },
+          "explain": { "type": "string" }
+        }
+      }
+    },
+
+    "related_papers": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["label", "citation"],
+        "properties": {
+          "label":    { "type": "string" },
+          "citation": { "type": "string" },
+          "url":      { "type": "string" }
+        }
+      }
+    },
+
+    "footer_note": { "type": "string" },
+    "extra_css":   { "type": "string", "description": "Appended to the inline <style> block." },
+    "extra_js":    { "type": "string", "description": "Appended inside the main IIFE at the end of the page." }
+  }
+}
