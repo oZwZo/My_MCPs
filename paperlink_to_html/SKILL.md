@@ -8,7 +8,28 @@ argument-hint: <paper-url-or-instruction>
 
 Input: $ARGUMENTS
 
-Follow every step below in order. Use the Python renderer at the end — do not re-author the HTML/CSS/JS by hand.
+Follow every step below in order. The Python renderer in `scripts/render_html.py` exists for the **scaffolding** (hero, theme toggle, D3 analysis flow, quiz, glossary, footer). For the **content sections themselves**, write rich `body_html` blocks that include several custom inline SVG diagrams and animations per paper — the renderer treats `body_html` as raw HTML so anything you can write in TxPert-style standalone HTML is allowed. For ambitious papers it is also acceptable (and sometimes cleaner) to hand-author a fully bespoke single-file HTML in the spirit of `~/Documents/html-literatures/TxPert_Methods_Explainer.html` — see Step 4b below.
+
+**Required interactive features (non-negotiable — every guide, every rendering path).** Even when hand-authoring the HTML, these three features MUST be present. The Path-A renderer gives them to you for free; if you hand-author, you must wire them yourself. Reference implementation: `~/Documents/html-literatures/Robin_Methods_Explainer.html`.
+
+1. **Light / dark theme toggle.** A fixed-position button (top-right; ☾/☀ glyph) that flips `data-theme` on `<html>` between `"light"` and `"dark"`. Persist the choice in `localStorage` under a paper-specific key (e.g. `<short_name>-theme`). Pick the initial value from `localStorage`, falling back to `prefers-color-scheme`. All colours must come from CSS variables (`--bg`, `--text`, `--accent`, …) declared under both `:root, html[data-theme="dark"]` and `html[data-theme="light"]` so the page inverts cleanly. If Mermaid is used, re-init it on toggle with the matching theme variables.
+2. **Interactive pipeline with clickable method panels.** Beyond the static Mermaid pipeline, include one *clickable* SVG pipeline where each method/agent/stage node has `class="pipeline-node" data-method="<key>"`. Clicking opens a slide-in side panel (`<aside class="method-panel">`) populated from a JS dict `{ key: { title, sub, cite, intuition, eqn, why } }` — citation (with DOI link), one-paragraph intuition, optional KaTeX equation, and a "Why this matters" callout. Close on × button, overlay click, or `Esc`. Re-typeset MathJax after each open (`MathJax.typesetPromise([panel])`).
+3. **Self-test quiz.** A `<section id="quiz">` with 5–8 multiple-choice questions. Each `.q` has `data-correct="a|b|c|d"` and an `.explain` block that reveals on selection. Wrong picks should highlight the wrong answer in red AND simultaneously reveal the correct answer in green (so the reader learns from the miss). A live `Score: N / total` element updates on every change and turns green on a perfect run.
+
+**Visual-density baseline (non-negotiable).** Beyond the three interactive features above, every guide must also include:
+
+- **≥4 custom inline `<svg>` diagrams** placed inside the section `body_html` blocks (one per major concept), each with a `.diagram-caption`. Examples: a problem-setup illustration, an architecture diagram, a per-method schematic, a results/ablation bar-chart, a mechanism cartoon.
+- **≥1 Mermaid flowchart** embedded with `<div class="mermaid">flowchart …</div>` for the overall pipeline (in addition to the clickable D3 / interactive-SVG flow), unless the paper is so short there is genuinely nothing left to flow-chart.
+- **CSS keyframe animations** on at least one of those SVGs — pulsing nodes, dashed flow lines, shimmering edges, animated message dots, growing bars. The TxPert reference defines reusable classes `.pulse-node`, `.flow-line`, `.edge-shimmer`, `.glow-node` plus keyframes `pulseGlow`, `flowDash`, `pulse-node`, `messagePulse`, `shimmer` — copy these in via `extra_css`.
+- **Stat tiles** (`.stat-tile` grid) under the hero and again next to the comparison/ablation table to break up text walls.
+- **Animated message-passing or signal-flow** somewhere in the architecture section — `<animateMotion>` along a `path` is enough; do not let an architecture diagram sit static.
+
+If you find yourself producing a guide that is mostly `<p>` + one D3 flow, stop and add diagrams. Use TxPert / Robin (linked above) as the lower bound for graphical density, not the upper bound.
+
+**Reference templates.**
+
+- `~/Documents/html-literatures/TxPert_Methods_Explainer.html` — gold standard for *graphical density* (custom inline SVGs per section, Mermaid, animated bars).
+- `~/Documents/html-literatures/Robin_Methods_Explainer.html` — gold standard for *interactive features* (theme toggle + clickable pipeline with slide-in method panels + self-test quiz with live scoring) layered on top of TxPert's graphical density. Use this as the structural template when hand-authoring.
 
 ---
 
@@ -66,7 +87,18 @@ For each of these, run a separate WebFetch/WebSearch:
 
 ---
 
-## Step 4 — Build the `paper_info` JSON
+## Step 4 — Decide the rendering path
+
+There are two acceptable rendering paths. Pick **one** based on the paper:
+
+| Path | When to use | What you produce |
+|---|---|---|
+| **A · Renderer + rich `body_html`** | Default for most papers. You want the built-in D3 analysis flow, quiz, glossary, theme toggle to come "for free". | A `paper_info` dict where each `sections[i].body_html` field contains its own inline `<svg>` diagrams, mermaid blocks, callouts, stat tiles, and tables. Inject the reusable animation CSS via `extra_css`. |
+| **B · Hand-authored single-file HTML** | Use when the paper has a strong visual identity (a custom architecture worth animating heavily, multi-panel results worth illustrating per-section) and the renderer's section list feels constraining. Reference template: `~/Documents/html-literatures/TxPert_Methods_Explainer.html`. | A complete standalone `.html` file with MathJax + Mermaid CDN, custom CSS (hero, TOC, cards, stat-tiles, callouts, keyframe animations), ≥4 custom inline `<svg>` diagrams, an embedded Mermaid flowchart, and a "TOC" nav. No Python renderer involved. |
+
+In **both** paths the visual-density baseline above applies. The Notion page (if any) is produced separately by `paperlink_to_notion` regardless of which HTML path you pick.
+
+## Step 4a — Build the `paper_info` JSON (Path A only)
 
 Populate the schema at `schemas/paper_info.schema.json`. Required top-level keys:
 
@@ -170,6 +202,60 @@ footer_note:         # optional disclaimer line; defaults to autogenerated date
 
 Anything not provided gets a reasonable default; missing fields never crash the renderer.
 
+### Step 4b — Body HTML must carry the diagrams
+
+Each `sections[i].body_html` block should follow this template, not just `<p>` paragraphs:
+
+```html
+<p>…narrative paragraph(s) introducing the concept…</p>
+
+<div class="diagram-frame">
+  <svg viewBox="0 0 800 280" xmlns="http://www.w3.org/2000/svg">
+    <!-- Custom inline SVG: nodes (rect/circle), edges (line/path with markers),
+         optional <animate>/<animateMotion>/CSS classes (.pulse-node, .flow-line,
+         .edge-shimmer, .glow-node), labels (text). -->
+  </svg>
+  <p class="diagram-caption">One-sentence caption that explains the diagram.</p>
+</div>
+
+<p>…analytical text continuing after the diagram…</p>
+
+<div class="callout tip">
+  <strong>💡 Why this matters.</strong> …one short paragraph…
+</div>
+```
+
+Aim for ≥1 diagram per major section. Reusable CSS lives in `extra_css`:
+
+```css
+@keyframes pulseGlow { 0%,100% { filter: drop-shadow(0 0 2px var(--accent)); opacity:1; } 50% { filter: drop-shadow(0 0 8px var(--accent)); opacity:0.85; } }
+@keyframes flowDash  { to { stroke-dashoffset: -20; } }
+@keyframes pulse-node{ 0%,100% { r:24; opacity:1; } 50% { r:27; opacity:0.9; } }
+@keyframes shimmer   { 0%,100% { stroke-opacity:0.3; } 50% { stroke-opacity:1; } }
+.pulse-node   { animation: pulse-node 2.4s ease-in-out infinite; transform-origin:center; transform-box:fill-box; }
+.flow-line    { stroke-dasharray: 6 4; animation: flowDash 1.6s linear infinite; }
+.edge-shimmer { animation: shimmer 2s ease-in-out infinite; }
+.glow-node    { animation: pulseGlow 2.5s ease-in-out infinite; }
+.diagram-frame   { background: var(--code-bg, #0b1018); border: 1px solid var(--rule); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; text-align: center; }
+.diagram-frame svg { max-width: 100%; height: auto; }
+.diagram-caption { font-size: 0.85rem; color: var(--muted); font-style: italic; margin-top: 0.7rem; text-align: center; }
+.stat-tile { background: linear-gradient(135deg, rgba(96,165,250,0.10), rgba(167,139,250,0.06)); border: 1px solid var(--rule); border-radius: 12px; padding: 1.1rem; text-align: center; }
+.stat-tile .num { font-size: 1.7rem; font-weight: 700; color: var(--accent); display: block; }
+.stat-tile .label { font-size: 0.78rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; margin-top: 0.3rem; }
+.callout { border-left: 4px solid var(--accent); border-radius: 8px; padding: 1rem 1.2rem; margin: 1rem 0; background: rgba(96,165,250,0.08); }
+.callout.warn    { background: rgba(251,191,36,0.08); border-left-color: #fbbf24; }
+.callout.success { background: rgba(52,211,153,0.08); border-left-color: #34d399; }
+.callout.tip     { background: rgba(167,139,250,0.08); border-left-color: #a78bfa; }
+```
+
+For Mermaid, include the script via `extra_js` once:
+
+```js
+import('https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js').then(m => m.default.initialize({ startOnLoad: true, theme: 'dark' }));
+```
+
+and put `<div class="mermaid">flowchart TB …</div>` in any `body_html`.
+
 ---
 
 ## Step 5 — Render
@@ -222,6 +308,10 @@ independently.
 
 ## Quality checklist (lessons distilled from prior runs)
 
+- [ ] **Three interactive features present:** theme toggle (☾/☀ button, localStorage-persisted), clickable pipeline with slide-in method panel (citation + intuition + equation + "why this matters"), and a self-test quiz (5–8 questions with live scoring and reveal-correct-on-wrong). Reference: `~/Documents/html-literatures/Robin_Methods_Explainer.html`.
+- [ ] **Visual-density baseline met:** ≥4 custom inline SVG diagrams in body sections, ≥1 Mermaid flowchart, at least one with CSS keyframe / `<animateMotion>` animation, stat tiles under the hero AND near the comparison/ablation section. Reference: `~/Documents/html-literatures/TxPert_Methods_Explainer.html`.
+- [ ] **Sections are not just `<p>` walls** — every major section has a `.diagram-frame` (SVG) or `.mermaid` or `.grid-2 of .card`s breaking up the prose.
+- [ ] **MathJax re-typeset inside dynamic panels:** if the slide-in method panel contains a KaTeX/LaTeX equation, call `MathJax.typesetPromise([panel])` after populating it.
 - [ ] Hero counters are **separate modalities**, never summed if they measure different things (e.g. dissociated cells vs spatial-segmented cells).
 - [ ] Analysis flow places method-selection benchmarks **before** the chosen method (parallel-fan → benchmark → winner), not after.
 - [ ] Every method panel has citation + DOI link + intuition + ≥1 equation + "why HDCA / this paper picked it".
